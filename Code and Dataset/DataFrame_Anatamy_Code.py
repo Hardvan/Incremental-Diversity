@@ -852,9 +852,7 @@ def PerformanceParametersGraph():
     diversity_list = [[], [], [], [], []]
 
     for records in range(25, 10026, 1000):   # 25 to 10025 in steps of 1000
-
         for algo in range(1, 5+1):  # 1,2,3,4,5
-
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
                 records, K_constant, algo)
 
@@ -865,17 +863,22 @@ def PerformanceParametersGraph():
 
             main_counter += 1
 
+        print(f"✅  Records = {records} done.")
+
     # Records v/s Residue
     plotGraph(records_list, residue_list, "Records", "Residue %",
               "K = {}".format(K_constant))
+    print("✅  Records v/s Residue Graph plotted.")
 
     # Records v/s Time
     plotGraph(records_list, time_list, "Records", "Time (ms)",
               "K = {}".format(K_constant))
+    print("✅  Records v/s Time Graph plotted.")
 
     # Records v/s Diversity
     plotGraph(records_list, diversity_list, "Records", "Diversity",
               "K = {}".format(K_constant))
+    print("✅  Records v/s Diversity Graph plotted.")
 
     ###########################
     # No. of records constant #
@@ -889,9 +892,7 @@ def PerformanceParametersGraph():
     diversity_list = [[], [], [], [], []]
 
     for K_val in range(1, 8+1):  # 1 to 8
-
         for algo in range(1, 5+1):  # 1,2,3,4,5
-
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
                 records_constant, K_val, algo)
 
@@ -902,17 +903,22 @@ def PerformanceParametersGraph():
 
             main_counter += 1
 
+        print(f"✅  K = {K_val} done.")
+
     # K v/s Residue
     plotGraph(K_list, residue_list, "K", "Residue %",
               "Records = {}".format(records_constant))
+    print("✅  K v/s Residue Graph plotted.")
 
     # K v/s Time
     plotGraph(K_list, time_list, "K", "Time (ms)",
               "Records = {}".format(records_constant))
+    print("✅  K v/s Time Graph plotted.")
 
     # K v/s Diversity
     plotGraph(K_list, diversity_list, "K", "Diversity",
               "Records = {}".format(records_constant))
+    print("✅  K v/s Diversity Graph plotted.")
 
     t2 = time.time()
 
@@ -973,7 +979,6 @@ def ComparisonGraph():
 
     for records in range(25, 10026, 1000):   # 25 to 10025 in steps of 1000
         for algo in [5, -100]:
-
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
                 records, K_constant, algo)
 
@@ -986,17 +991,22 @@ def ComparisonGraph():
 
             main_counter += 1
 
+        print(f"✅  Records = {records} done.")
+
     # Records v/s Residue
     plotCompare(records_list, residue_list, "Records", "Residue %",
                 "K = {}".format(K_constant))
+    print("✅  Records v/s Residue Graph plotted.")
 
     # Records v/s Time
     plotCompare(records_list, time_list, "Records", "Time (ms)",
                 "K = {}".format(K_constant))
+    print("✅  Records v/s Time Graph plotted.")
 
     # Records v/s Diversity
     plotCompare(records_list, diversity_list, "Records", "Diversity",
                 "K = {}".format(K_constant))
+    print("✅  Records v/s Diversity Graph plotted.")
 
     ###########################
     # No. of records constant #
@@ -1011,7 +1021,6 @@ def ComparisonGraph():
 
     for K_val in range(1, 8+1):  # 1 to 8
         for algo in [5, -100]:
-
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
                 records_constant, K_val, algo)
 
@@ -1024,17 +1033,22 @@ def ComparisonGraph():
 
             main_counter += 1
 
+        print(f"✅  K = {K_val} done.")
+
     # K v/s Residue
     plotCompare(K_list, residue_list, "K", "Residue %",
                 "Records = {}".format(records_constant))
+    print("✅  K v/s Residue Graph plotted.")
 
     # K v/s Time
     plotCompare(K_list, time_list, "K", "Time (ms)",
                 "Records = {}".format(records_constant))
+    print("✅  K v/s Time Graph plotted.")
 
     # K v/s Diversity
     plotCompare(K_list, diversity_list, "K", "Diversity",
                 "Records = {}".format(records_constant))
+    print("✅  K v/s Diversity Graph plotted.")
 
     t2 = time.time()
 
