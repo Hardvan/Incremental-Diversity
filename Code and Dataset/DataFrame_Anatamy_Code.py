@@ -763,26 +763,33 @@ def main(no_of_records, K, algo, display=False):
 
     if mode == 4:  # Saving the Tables to CSV
 
+        FOLDER_NAME = "with_lower_upper_age"
+
         # Converting original Microdata to Pandas Dataframe
         df, columns = NestedDictionaryToDataFrame(original_table)
-        df.to_csv(
-            f"with_lower_upper_age/original_microdata_Records_{no_of_records}_k_{K}.csv", index=False)
+        path_name = f"{FOLDER_NAME}/original_microdata_Records_{no_of_records}_k_{K}.csv"
+        df.to_csv(path_name, index=False)
+        print(f"✅  Saved Original Microdata to {path_name}")
 
         # Converting Masked Microdata to Pandas Dataframe
         masked_df, columns = NestedDictionaryToDataFrame(masked_microdata)
         displayDF(masked_df, columns)
-        masked_df.to_csv(
-            f"with_lower_upper_age/masked_microdata_Records_{no_of_records}_k_{K}.csv", index=False)
+        path_name = f"{FOLDER_NAME}/masked_microdata_Records_{no_of_records}_k_{K}.csv"
+        masked_df.to_csv(path_name, index=False)
+        print(f"✅  Saved Masked Microdata to {path_name}")
 
         # Converting QIT and ST to Dataframe
         qit_df, columns = NestedDictionaryToDataFrame(qit_table)
         st_df, columns = NestedDictionaryToDataFrame(st_table)
 
         # Saving QIT and ST to CSV
-        qit_df.to_csv(
-            f"with_lower_upper_age/qit_{no_of_records}_k_{K}.csv", index=False)
-        st_df.to_csv(
-            f"with_lower_upper_age/st_{no_of_records}_k_{K}.csv", index=False)
+        path_name = f"{FOLDER_NAME}/qit_{no_of_records}_k_{K}.csv"
+        qit_df.to_csv(path_name, index=False)
+        print(f"✅  Saved QIT to {path_name}")
+
+        path_name = f"{FOLDER_NAME}/st_{no_of_records}_k_{K}.csv"
+        st_df.to_csv(path_name, index=False)
+        print(f"✅  Saved ST to {path_name}")
 
     # Returning the Performance Parameters values for the Graph Plotting
     return no_of_records, K, total_time, residue_percentage, diversity_percentage
@@ -1056,17 +1063,24 @@ MODE_MAP = {1: "Test for a Specific Case",
 print("Enter Code Mode:")
 for key, value in MODE_MAP.items():
     print(f"{key}: {value}")
-mode = int(input("Enter Mode (default = 1): "))
-if not mode:
-    mode = 1
+mode = None
+try:
+    mode = int(input("Enter Mode (default = 1): "))
+except:
+    mode = 1  # Default Mode
 
 if mode == 1 or mode == 4:
-    no_of_records = int(input("Enter no. of records (Recommended: 25): "))
-    if not no_of_records:
-        no_of_records = 25
-    K = int(input("Enter k (Recommended: 3): "))
-    if not K:
-        K = 3
+    no_of_records = None
+    try:
+        no_of_records = int(
+            input("\nEnter no. of records (Recommended: 25): "))
+    except:
+        no_of_records = 25  # Default no_of_records
+    K = None
+    try:
+        K = int(input("\nEnter k (Recommended: 3): "))
+    except:
+        K = 3  # Default K
 
     ALGO_MAP = {1: "Marital Status present only once",
                 2: "Marital Status Semantic Tree only One Count",
@@ -1076,9 +1090,11 @@ if mode == 1 or mode == 4:
                 -100: "Paper Algo (l,e diversity) (like 2nd algo)"}
     for key, value in ALGO_MAP.items():
         print(f"{key}: {value}")
-    algo_chosen = int(input("Enter algo no: "))
-    if not algo_chosen:
-        algo_chosen = 5
+    algo_chosen = None
+    try:
+        algo_chosen = int(input("\nEnter algo no: "))
+    except:
+        algo_chosen = 5  # Default algo
 
     # Display the chosen input parameters
     print("\nChosen Input Parameters:")
@@ -1086,6 +1102,12 @@ if mode == 1 or mode == 4:
     print(f"No. of Records = {no_of_records}")
     print(f"K = {K}")
     print(f"Algorithm Chosen = {algo_chosen} ({ALGO_MAP[algo_chosen]})")
+
+    print("Proceed? (y/n)")
+    choice = input()
+    if choice.lower() == "n":
+        print("Exiting Code.")
+        exit()
 
     no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
         no_of_records, K, algo_chosen, True)
