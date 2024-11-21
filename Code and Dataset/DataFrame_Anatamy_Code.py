@@ -43,19 +43,15 @@ def displayTable2(table, title=None, sensitive=False, sensitive_attribute=None):
 
     print("______________________________________________________")
 
-    return
-
 
 def getNoOfUniqueValues(table, sensitive_attribute):
     """ Returns the no. of unique values of Sensitive Attribute present in the table """
 
     lst = []
     for record in table.values():
-
         value = record[sensitive_attribute]
         if value not in lst:
             lst.append(value)
-
     return len(lst)
 
 
@@ -63,12 +59,10 @@ def getMicrodata(no_of_records, K, sensitive_attribute, display):
     """ Returns the Microdata & Extra Time taken for displaying the microdata table. """
 
     final_lines = None
-
     with open("./datasetEL.txt", 'r') as file:
         final_lines = file.readlines()[1:no_of_records+1]
 
     diction = {}
-
     for i, line in enumerate(final_lines):
 
         slno = i+1
@@ -93,7 +87,7 @@ def getMicrodata(no_of_records, K, sensitive_attribute, display):
 
         diction[slno]["Group ID"] = ((slno-1)//K)+1
         # OR
-        #diction[slno]["Group ID"] = math.floor((slno-1)/K) + 1
+        # diction[slno]["Group ID"] = math.floor((slno-1)/K) + 1
 
     # Displaying Microdata Table here because it is giving shuffled Group ID for some records outside this function
     extra = 0
@@ -107,11 +101,13 @@ def getMicrodata(no_of_records, K, sensitive_attribute, display):
 
 
 def getValuesInEq(eq_class, attribute_name):
+    """ Returns the values of a particular attribute in an Equivalence Class """
 
     return [record[attribute_name] for record in eq_class.values()]
 
 
 def getParent(child):
+    """ Returns the Parent of a Child in the Semantic Tree (for Marital Status) """
 
     tree = {"Married": ["Married-civ-spouse",
                         "Married-spouse-absent",
@@ -134,15 +130,12 @@ def ParentsCheck(value, existing_values, algo):
     """ Checks if a record can be added in EQ class (True) or Not (False) """
 
     parent = getParent(value)
-
     existing_parents = list(map(getParent, existing_values))
 
     if algo == 2 or algo == -100:
-
         return parent not in existing_parents
 
     elif algo == 3:
-
         # After adding in EQ Class, becomes two common parents in EQ
         return existing_parents.count(parent) <= 1
 
@@ -151,6 +144,7 @@ def ParentsCheck(value, existing_values, algo):
 
 
 def getDiseaseParent(child):
+    """ Returns the Parent of a Child in the Disease Semantic Tree """
 
     tree = {"Respiratory disease": ["Asthama",
                                     "Pneumonia",
@@ -179,9 +173,7 @@ def DiseaseParentsCheck(value, existing_values):
     """ Checks if a record can be added in EQ class (True) or Not (False) """
 
     parent = getDiseaseParent(value)
-
     existing_parents = list(map(getDiseaseParent, existing_values))
-
     return parent not in existing_parents
 
 
@@ -202,7 +194,6 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
 
     # Creating Group IDs
     for i in range(1, max_group_id+1):
-
         new_dict[i] = {}      # Stores as {1:{}, 2:{}}
 
     for record_no, record in original_table.items():    # Each Record
@@ -231,11 +222,9 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
                 sensitive_value, existing_sensitive_values)
 
         if check:  # Sensitive Value can be added in EQ class
-
             current_eq_class[record_no] = record    # Storing value in new_dict
 
         else:   # Sensitive Value cannot be added in EQ class
-
             record["Group ID"] = "NA"
             # Storing value in temp_dict
             temp_dict[record_no] = record
@@ -244,34 +233,26 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
 
     # To store records that do not fit in any eq class
     residue_dict = copy.deepcopy(temp_dict)
-
     for temp_record_no, temp_record in temp_dict.items():     # Each record in temp_dict
-
         temp_sensitive_value = temp_record[sensitive_attribute]
-
         for eq_no, current_eq_class in new_dict.items():      # Each Equivalence Class
-
             existing_sensitive_values = getValuesInEq(
                 current_eq_class, sensitive_attribute)
 
             # Conditions for records from temp_dict to be added into Modified Microdata Table
-
             check1 = None
             if algo in [1, 4]:
                 # Unique Marital Status value in a EQ Class
                 check1 = temp_sensitive_value not in existing_sensitive_values
-
             elif algo in [2, 3, -100]:
                 check1 = ParentsCheck(
                     temp_sensitive_value, existing_sensitive_values, algo)
-
             elif algo == 5:
                 check1 = DiseaseParentsCheck(
                     temp_sensitive_value, existing_sensitive_values)
 
             # No. fo records in EQ Class is < K
             check2 = len(current_eq_class) < K
-
             if check1 and check2:
 
                 # Updating Group ID of the record to Equivalence Class No.
@@ -288,18 +269,13 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
 
     # No additional diversification for algo = -100
     if algo == -100:
-
         latest_dict = {}
-
         for eq_no, current_eq_class in new_dict.items():  # Each Equivalence Class
-
             for record_no, record in current_eq_class.items():  # Each Record
-
                 # Adding records in latest_dict
                 latest_dict[record_no] = record
 
         """ 7) Returning the Modified Microdata Table and the Residue Dictionary """
-
         return latest_dict, residue_dict
 
     """ Secondary Sensitive Attribute """
@@ -307,56 +283,39 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
     """ 3) Exchanging Education values > 1 """
 
     for eq_no in new_dict.copy():  # Each Equivalence Class
-
         current_eq_class = new_dict[eq_no]
-
         for record_no in current_eq_class.copy():  # Each Record
-
             record = current_eq_class[record_no]
-
             if getValuesInEq(current_eq_class, "Education").count(record["Education"]) > 1:
-
                 # Finding Record in residue_dict with similar Sensitive Value
                 for residue_no in residue_dict.copy():
-
                     residue_record = residue_dict[residue_no]
-
                     check1 = None
                     if algo in [1, 4]:
                         # Not disturbing Primary Sensitive Attribute
                         check1 = residue_record[sensitive_attribute] == record[sensitive_attribute]
-
                     elif algo in [2, 3]:
                         parent1 = getParent(
                             residue_record[sensitive_attribute])
                         parent2 = getParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     elif algo == 5:
                         parent1 = getDiseaseParent(
                             residue_record[sensitive_attribute])
                         parent2 = getDiseaseParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     check2 = residue_record["Education"] != record["Education"]
-
                     if check1 and check2:
-
                         # Exchanging record
-
                         residue_record["Group ID"] = eq_no
-
                         new_dict[eq_no][residue_no] = copy.deepcopy(
                             residue_record)  # Adding in modified dictionary
                         residue_dict[record_no] = copy.deepcopy(record)
-
                         del new_dict[eq_no][record_no]
                         del residue_dict[residue_no]
-
                         break   # We have performed the exchange operation
-
                     else:
                         continue
 
@@ -368,20 +327,13 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
     """ 4) Exchanging Employment values > 1 """
 
     for eq_no in new_dict.copy():  # Each Equivalence Class
-
         current_eq_class = new_dict[eq_no]
-
         for record_no in current_eq_class.copy():  # Each Record
-
             record = current_eq_class[record_no]
-
             if getValuesInEq(current_eq_class, "Employment").count(record["Employment"]) > 1:
-
                 # Finding Record in residue_dict with similar Sensitive Value
                 for residue_no in residue_dict.copy():
-
                     residue_record = residue_dict[residue_no]
-
                     check1 = None
                     if algo in [1, 4]:
                         # Not disturbing Primary Sensitive Attribute
@@ -391,36 +343,26 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
                         parent1 = getParent(
                             residue_record[sensitive_attribute])
                         parent2 = getParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     elif algo == 5:
                         parent1 = getDiseaseParent(
                             residue_record[sensitive_attribute])
                         parent2 = getDiseaseParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     # Not disturbing Secondary SA
                     check2 = residue_record["Education"] == record["Education"]
-
                     check3 = residue_record["Employment"] != record["Employment"]
-
                     if check1 and check2 and check3:
-
                         # Exchanging record
-
                         residue_record["Group ID"] = eq_no
-
                         new_dict[eq_no][residue_no] = copy.deepcopy(
                             residue_record)  # Adding in modified dictionary
                         residue_dict[record_no] = copy.deepcopy(record)
-
                         del new_dict[eq_no][record_no]
                         del residue_dict[residue_no]
-
                         break   # We have performed the exchange operation
-
                     else:
                         continue
 
@@ -432,20 +374,13 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
     """ 5) Exchanging Race values > 1 """
 
     for eq_no in new_dict.copy():  # Each Equivalence Class
-
         current_eq_class = new_dict[eq_no]
-
         for record_no in current_eq_class.copy():  # Each Record
-
             record = current_eq_class[record_no]
-
             if getValuesInEq(current_eq_class, "Race").count(record["Race"]) > 1:
-
                 # Finding Record in residue_dict with similar Sensitive Value
                 for residue_no in residue_dict.copy():
-
                     residue_record = residue_dict[residue_no]
-
                     check1 = None
                     if algo in [1, 4]:
                         # Not disturbing Primary Sensitive Attribute
@@ -455,14 +390,12 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
                         parent1 = getParent(
                             residue_record[sensitive_attribute])
                         parent2 = getParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     elif algo == 5:
                         parent1 = getDiseaseParent(
                             residue_record[sensitive_attribute])
                         parent2 = getDiseaseParent(record[sensitive_attribute])
-
                         check1 = parent1 == parent2    # Not disturbing the Parent values
 
                     # Not disturbing Secondary SA
@@ -472,22 +405,15 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
                     check3 = residue_record["Employment"] == record["Employment"]
 
                     check4 = residue_record["Race"] != record["Race"]
-
                     if check1 and check2 and check3 and check4:
-
                         # Exchanging record
-
                         residue_record["Group ID"] = eq_no
-
                         new_dict[eq_no][residue_no] = copy.deepcopy(
                             residue_record)  # Adding in modified dictionary
                         residue_dict[record_no] = copy.deepcopy(record)
-
                         del new_dict[eq_no][record_no]
                         del residue_dict[residue_no]
-
                         break   # We have performed the exchange operation
-
                     else:
                         continue
 
@@ -495,17 +421,12 @@ def diversifyRecords(table, no_of_records, K, algo, sensitive_attribute):
                 continue
 
     """ 6) Converting the format of New Dictionary to the same as that of Original Dictionary """
-
     latest_dict = {}
-
     for eq_no, current_eq_class in new_dict.items():  # Each Equivalence Class
-
         for record_no, record in current_eq_class.items():  # Each Record
-
             latest_dict[record_no] = record     # Adding records in latest_dict
 
     """ 7) Returning the Modified Microdata Table and the Residue Dictionary """
-
     return latest_dict, residue_dict
 
 
@@ -516,15 +437,11 @@ def getTwoTables(diction, sensitive_attribute):
     st_table = {}
 
     for no, record in diction.items():  # Each Record
-
         qit_table[no] = {}  # Each Record in QIT
         st_table[no] = {}   # Each Record in ST
-
         for attribute_name, value in record.items():   # Each Attribute
-
             if attribute_name == sensitive_attribute:  # Storing in Sensitive Table
                 st_table[no][attribute_name] = value
-
             else:   # Storing in QIT Table
                 qit_table[no][attribute_name] = value
 
@@ -548,11 +465,9 @@ def getSensitiveCount(st_table, no_of_records, K, sensitive_attribute):
 
     # Creating Group IDs nested structure
     for i in range(1, max_group_id+1):
-
         sensitive_count_dict[i] = {}      # Stores as {1:{}, 2:{}}
 
     for record in st_table.values():  # Each Record
-
         # Particular Equivalence Class corresponding to record's Group ID
         current_eq_class = sensitive_count_dict[record["Group ID"]]
 
@@ -560,11 +475,9 @@ def getSensitiveCount(st_table, no_of_records, K, sensitive_attribute):
 
         # Checking if Sensitive Attribute already exists in the eq class
         if sensitive_value in current_eq_class.keys():
-
             current_eq_class[sensitive_value] += 1
 
         else:   # Creating "sensitive_attribute":<count> pair
-
             current_eq_class[sensitive_value] = 1
 
     return sensitive_count_dict
@@ -580,37 +493,28 @@ def maskData(attribute_name, value, group_id):
         age = int(value)
 
         factor = (group_id-1) % 3 + 1
-
         lower = age - age % 10
         upper = lower + 10*factor - 1
 
         return f"({lower} - {upper})"
-        # return "({} - {})".format(lower, upper)
 
     elif attribute_name == "Gender":
-
         return "M/F"
 
     elif attribute_name == "Zip Code":
-
         zip_code = str(value)
-
         return zip_code[:-3] + "*"*3
 
     elif attribute_name == "Employment":
-
         return "*"
 
     elif attribute_name == "Race":
-
         return "*"
 
     elif attribute_name == "Salary":
-
         return "*"
 
     else:
-
         raise Exception(
             f"MASKING not yet defined for attribute: {attribute_name}")
 
@@ -619,15 +523,11 @@ def getMaskedDictionary(microdata, attributes_to_mask):
     """ Returns the Masked Dictionary """
 
     mask_dict = copy.deepcopy(microdata)
-
     for record in mask_dict.values():  # Each Record
-
         for attribute_name in attributes_to_mask:   # Each Attribute to Mask
-
             # Updating with masked value
             record[attribute_name] = maskData(
                 attribute_name, record[attribute_name], record["Group ID"])
-
     return mask_dict
 
 
@@ -644,7 +544,7 @@ def getResiduePercentage(no_of_records, diction):
 
 
 def getDiversityPerc(received_table, no_of_records, K, verbose=False):
-    """ Returns the Diverstiy of the Modified Microdata Table rounded to 2 places of decimal """
+    """ Returns the Diversity of the Modified Microdata Table rounded to 2 places of decimal """
 
     table = copy.deepcopy(received_table)
 
@@ -734,8 +634,6 @@ def displayPerformance(no_of_records, unique, K, sensitive_attribute,
 
     print("______________________________________________________")
 
-    return
-
 
 def NestedDictionaryToDataFrame(masked_microdata):
 
@@ -758,19 +656,16 @@ def NestedDictionaryToDataFrame(masked_microdata):
 def displayDF(df, headers):
 
     print("\nDISPLAYING DATAFRAME\n")
-
     print(tabulate(df, headers=headers))
 
 
 def addLowerAndUpperAge(table):
 
     output = copy.deepcopy(table)
-
     for record in output.values():
         age = record["Age"].replace(" ", "")  # Removing Spaces
         age = age[1:-1]  # Removing Parentheses
         record["Lower Age"], record["Upper Age"] = age.split("-")
-
     return output
 
 
@@ -779,67 +674,69 @@ def main(no_of_records, K, algo, display=False):
         Spearheads the beginning of the Algorithm and returns the Performance Parameters.
 
         Five Algorithms can be chosen:
-        1) Marital Status present only once
-        2) Marital Status Semantic Tree only One Count
-        3) Marital Status Semantic Tree with Two Count
-        4) Relationship present only once
-        5) Disease Semantic Tree
+        1: Marital Status present only once
+        2: Marital Status Semantic Tree only One Count
+        3: Marital Status Semantic Tree with Two Count
+        4: Relationship present only once
+        5: Disease Semantic Tree
+        -100: Paper Algo (l,e diversity) (like 2nd algo)
 
-        -100) Paper Algo (l,e diversity) (like 2nd algo)
+    Args:
+        no_of_records (int): No. of records to be considered from the dataset
+        K (int): Number of Records in each Equivalence Class
+        algo (int): Algorithm Number to be chosen
+        display (bool): Whether to display the tables or not
 
+    Returns:
+        no_of_records (int): No. of Records to be considered from the dataset
+        K (int): No. of Records in each Equivalence Class
+        total_time (float): Total Time taken in ms rounded to 4 places of decimal
+        residue_percentage (float): Residue % rounded to 2 places of decimal
+        diversity_percentage (float): Diversity of the Modified Microdata Table rounded to 2 places of decimal
     """
 
     # Starting Time
     start = time.time()
-
     extra = 0   # For extra wastage time
 
     # Determining Sensitive Attribute according to Algorithm chosen
-    sensitive_attribute = "Marital Status"  # For algo 1,2,3, -100
-
+    sensitive_attribute = "Marital Status"  # For algo 1,2,3,-100
     if algo == 4:
         sensitive_attribute = "Relationship"
     elif algo == 5:
         sensitive_attribute = "Disease"
 
-    # 1) Getting Microdata, QIT & ST Tables
-
+    # ? 1) Getting Microdata, QIT & ST Tables
     original_table, extra = getMicrodata(
         no_of_records, K, sensitive_attribute, display)
 
-    # 2) Diversify Records
-
+    # ? 2) Diversify Records
     new_original_table = None
     residue_dict = None
 
     new_original_table, residue_dict = diversifyRecords(
         original_table, no_of_records, K, algo, sensitive_attribute)
 
-    no_of_unique_values_for_senstive_attribute = getNoOfUniqueValues(
+    no_of_unique_values_for_sensitive_attribute = getNoOfUniqueValues(
         original_table, sensitive_attribute)
 
-    # 3) Getting QIT and ST Tables
-
+    # ? 3) Getting QIT and ST Tables
     qit_table, st_table = getTwoTables(new_original_table, sensitive_attribute)
     sensitive_count_dict = getSensitiveCount(
         st_table, no_of_records, K, sensitive_attribute)
 
-    # 4) Masking
-
+    # ? 4) Masking
     attributes_to_mask = ["Gender", "Age", "Zip Code"]
-
     masked_microdata = getMaskedDictionary(
         new_original_table, attributes_to_mask)
 
-    # 5) Adding Lower Age and Upper Age
-
+    # ? 5) Adding Lower Age and Upper Age
     masked_microdata = addLowerAndUpperAge(masked_microdata)
 
     # End Time for Program Run
     end = time.time()
 
-    # 5) Displaying All Tables
-
+    # ? 6) Displaying All Tables
     if (display):
 
         # Original Microdata is displayed in get getMicrodata() function itself
@@ -855,29 +752,25 @@ def main(no_of_records, K, algo, display=False):
 
         displayTable2(masked_microdata, title="MASKED MICRODATA")
 
-    # 6) Displaying Performance Parameters
-
+    # ? 7) Displaying Performance Parameters
     total_time = getTimePerformance(start, end, extra)
-
     residue_percentage = getResiduePercentage(no_of_records, residue_dict)
-
     diversity_percentage = getDiversityPerc(
         new_original_table, no_of_records, K, verbose=False)
 
-    displayPerformance(no_of_records, no_of_unique_values_for_senstive_attribute, K,
+    displayPerformance(no_of_records, no_of_unique_values_for_sensitive_attribute, K,
                        sensitive_attribute, total_time, residue_percentage, diversity_percentage, algo)
 
-    if mode == 4:
+    if mode == 4:  # Saving the Tables to CSV
 
+        # Converting original Microdata to Pandas Dataframe
         df, columns = NestedDictionaryToDataFrame(original_table)
         df.to_csv(
             f"with_lower_upper_age/original_microdata_Records_{no_of_records}_k_{K}.csv", index=False)
 
-        # 7) Converting to Pandas Dataframe
+        # Converting Masked Microdata to Pandas Dataframe
         masked_df, columns = NestedDictionaryToDataFrame(masked_microdata)
-
         displayDF(masked_df, columns)
-
         masked_df.to_csv(
             f"with_lower_upper_age/masked_microdata_Records_{no_of_records}_k_{K}.csv", index=False)
 
@@ -891,8 +784,7 @@ def main(no_of_records, K, algo, display=False):
         st_df.to_csv(
             f"with_lower_upper_age/st_{no_of_records}_k_{K}.csv", index=False)
 
-    # 8) Returning the Performance Parameters values for the Graph Plotting
-
+    # Returning the Performance Parameters values for the Graph Plotting
     return no_of_records, K, total_time, residue_percentage, diversity_percentage
 
 
@@ -930,8 +822,6 @@ def plotGraph(X, Y, x_lab, y_lab, constant):
 
     plt.show()
 
-    return
-
 
 def PerformanceParametersGraph():
     """ Plots the Graph of various performance parameters by keeping a parameter as constant
@@ -940,7 +830,9 @@ def PerformanceParametersGraph():
 
     main_counter = 0
 
-    """ K constant """
+    ##############
+    # K constant #
+    ##############
 
     t1 = time.time()
 
@@ -952,7 +844,7 @@ def PerformanceParametersGraph():
     residue_list = [[], [], [], [], []]
     diversity_list = [[], [], [], [], []]
 
-    for records in range(25, 10026, 1000):   # 25 to 5025 in steps of 1000
+    for records in range(25, 10026, 1000):   # 25 to 10025 in steps of 1000
 
         for algo in range(1, 5+1):  # 1,2,3,4,5
 
@@ -966,7 +858,7 @@ def PerformanceParametersGraph():
 
             main_counter += 1
 
-    # Records v/s Resdiue
+    # Records v/s Residue
     plotGraph(records_list, residue_list, "Records", "Residue %",
               "K = {}".format(K_constant))
 
@@ -978,7 +870,9 @@ def PerformanceParametersGraph():
     plotGraph(records_list, diversity_list, "Records", "Diversity",
               "K = {}".format(K_constant))
 
-    """ No. of records constant """
+    ###########################
+    # No. of records constant #
+    ###########################
 
     records_constant = 10000
 
@@ -1020,8 +914,6 @@ def PerformanceParametersGraph():
     print("Graph Plotting Time = {} min, {} s".format(t//60, t % 60))
     print("main(): called {} times.".format(main_counter))
 
-    return
-
 
 def plotCompare(X, Y, x_lab, y_lab, constant):
 
@@ -1051,8 +943,6 @@ def plotCompare(X, Y, x_lab, y_lab, constant):
 
     plt.show()
 
-    return
-
 
 def ComparisonGraph():
     """ Plots the Graph of various performance parameters by keeping a parameter as constant
@@ -1061,7 +951,9 @@ def ComparisonGraph():
 
     main_counter = 0
 
-    """ K constant """
+    ##############
+    # K constant #
+    ##############
 
     t1 = time.time()
 
@@ -1072,8 +964,7 @@ def ComparisonGraph():
     residue_list = [[], []]
     diversity_list = [[], []]
 
-    for records in range(25, 10026, 1000):   # 25 to 5025 in steps of 1000
-
+    for records in range(25, 10026, 1000):   # 25 to 10025 in steps of 1000
         for algo in [5, -100]:
 
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
@@ -1088,7 +979,7 @@ def ComparisonGraph():
 
             main_counter += 1
 
-    # Records v/s Resdiue
+    # Records v/s Residue
     plotCompare(records_list, residue_list, "Records", "Residue %",
                 "K = {}".format(K_constant))
 
@@ -1100,7 +991,9 @@ def ComparisonGraph():
     plotCompare(records_list, diversity_list, "Records", "Diversity",
                 "K = {}".format(K_constant))
 
-    """ No. of records constant """
+    ###########################
+    # No. of records constant #
+    ###########################
 
     records_constant = 10000
 
@@ -1110,7 +1003,6 @@ def ComparisonGraph():
     diversity_list = [[], []]
 
     for K_val in range(1, 8+1):  # 1 to 8
-
         for algo in [5, -100]:
 
             no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
@@ -1144,10 +1036,10 @@ def ComparisonGraph():
     print("Graph Plotting Time = {} min, {} s".format(t//60, t % 60))
     print("main(): called {} times.".format(main_counter))
 
-    return
 
-
+########################
 # Top Level Statements
+########################
 
 # MODES:
 
@@ -1156,33 +1048,29 @@ def ComparisonGraph():
     # 3: Plot Comparison Graphs between Incremental Diversity and (l,e) diversity
     # 4: Mode 1 + Convert Nested Dictionary to Pandas dataframe and save to csv
 
-
 print("Enter Code Mode:")
 print("1) Test for a Specific Case")
-print("2) Plot Graphs")
-print("3) Our Algo v/s Paper Algo")
+print("2) Plot Performance Parameters Graph")
+print("3) Compare: Our Algo v/s Paper Algo")
 print("4) Mode 1 + Pandas Dataframe")
 mode = int(input("Enter Mode: "))
 
 if mode == 1 or mode == 4:
-
-    no_of_records = int(input("Enter no. of records: "))
-    K = int(input("Enter k: "))
+    no_of_records = int(input("Enter no. of records (Recommended: 10000): "))
+    K = int(input("Enter k (Recommended: 3): "))
     print("""\nFive Algorithms can be chosen:
     1) Marital Status present only once
     2) Marital Status Semantic Tree only One Count
     3) Marital Status Semantic Tree with Two Count
     4) Relationship present only once
-    5) Disease Semantic Tree""")
+    5) Disease Semantic Tree (Recommended)""")
     algo_chosen = int(input("Enter algo no: "))
 
     no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
         no_of_records, K, algo_chosen, True)
 
 elif mode == 2:
-
     PerformanceParametersGraph()
 
 elif mode == 3:
-
     ComparisonGraph()
