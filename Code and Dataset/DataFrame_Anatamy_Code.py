@@ -1048,23 +1048,44 @@ def ComparisonGraph():
     # 3: Plot Comparison Graphs between Incremental Diversity and (l,e) diversity
     # 4: Mode 1 + Convert Nested Dictionary to Pandas dataframe and save to csv
 
+MODE_MAP = {1: "Test for a Specific Case",
+            2: "Plot Performance Parameters Graph",
+            3: "Compare: Our Algo v/s Paper Algo",
+            4: "Mode 1 + Pandas Dataframe (to save tables as CSV (Recommended))"}
+
 print("Enter Code Mode:")
-print("1) Test for a Specific Case")
-print("2) Plot Performance Parameters Graph")
-print("3) Compare: Our Algo v/s Paper Algo")
-print("4) Mode 1 + Pandas Dataframe")
-mode = int(input("Enter Mode: "))
+for key, value in MODE_MAP.items():
+    print(f"{key}: {value}")
+mode = int(input("Enter Mode (default = 1): "))
+if not mode:
+    mode = 1
 
 if mode == 1 or mode == 4:
-    no_of_records = int(input("Enter no. of records (Recommended: 10000): "))
+    no_of_records = int(input("Enter no. of records (Recommended: 25): "))
+    if not no_of_records:
+        no_of_records = 25
     K = int(input("Enter k (Recommended: 3): "))
-    print("""\nFive Algorithms can be chosen:
-    1) Marital Status present only once
-    2) Marital Status Semantic Tree only One Count
-    3) Marital Status Semantic Tree with Two Count
-    4) Relationship present only once
-    5) Disease Semantic Tree (Recommended)""")
+    if not K:
+        K = 3
+
+    ALGO_MAP = {1: "Marital Status present only once",
+                2: "Marital Status Semantic Tree only One Count",
+                3: "Marital Status Semantic Tree with Two Count",
+                4: "Relationship present only once",
+                5: "Disease Semantic Tree (Recommended)",
+                -100: "Paper Algo (l,e diversity) (like 2nd algo)"}
+    for key, value in ALGO_MAP.items():
+        print(f"{key}: {value}")
     algo_chosen = int(input("Enter algo no: "))
+    if not algo_chosen:
+        algo_chosen = 5
+
+    # Display the chosen input parameters
+    print("\nChosen Input Parameters:")
+    print(f"Mode = {mode} ({MODE_MAP[mode]})")
+    print(f"No. of Records = {no_of_records}")
+    print(f"K = {K}")
+    print(f"Algorithm Chosen = {algo_chosen} ({ALGO_MAP[algo_chosen]})")
 
     no_of_records, K, total_time, residue_percentage, diversity_percentage = main(
         no_of_records, K, algo_chosen, True)
