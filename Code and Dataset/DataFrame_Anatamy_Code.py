@@ -1059,11 +1059,10 @@ def ComparisonGraph():
 
 
 ########################
-# Top Level Statements
+# Top Level Statements #
 ########################
 
 # MODES:
-
     # 1: Run Code for Specific Values of no_of_records, k, algorithm chosen
     # 2: Plot Performance Parameters Graph of Three Algorithms
     # 3: Plot Comparison Graphs between Incremental Diversity and (l,e) diversity
